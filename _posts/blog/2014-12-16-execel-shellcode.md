@@ -86,7 +86,7 @@ description: 对CVE-2012-0158样本的分析
 
 &emsp;&emsp;该exp使用了MSCOMCTL.DLL里的一个JMP ESP地址作为RET，这样可以使EXP做到与操作系统版本无关，只与OFFICE版本有关：
 ![JMPESP](../images/excelshellcode/JMPESP.jpg)
-JMPESP
+
 &emsp;&emsp;然后跳转回堆栈之后会先执行一小段EGGHUNTER SHELLCODE，去解码并跳转到真正的SHELLCODE。
 
     001396AC 81EC 00100000 sub esp, 1000
@@ -190,12 +190,14 @@ JMPESP
 ## Shellcode2 ##
 
 第二段shellcode是此exp的真正精华所在，这段shellcode应该也是使用C语言编写的，长度非常的长，主要做了以下几件事情：
+
 1. 获取API地址+5的地址，而不是调用API地址，而是每次调用时都判断有没有inline hook，可以绕过杀软的应用层hook和调试器int3断点。
 2. 修改msvbvm60.dll的PutMemVar函数，把自身代码写进去，这样每次调用API都会从msvbvm60!PutMemVar发起，可以骗过某些根据调用栈判断exe/dll的杀软。
 3. 从自身读出一个exe文件，并解密
 4. 修复xls文件，使自身成为无漏洞的正常文件
 5. 启动一个EXCEL.EXE进程，并把刚才读出的exe文件内容注入，通过修改PEB的ImageBase来执行exe代码。这样等于使用白名单进程做操作，所有杀软都会放行。
 6. 结束自身进程
+
 &emsp;&emsp;可以看出作者还是用了很多技巧来绕过杀软和反调试的，由于这些代码太长了，我只贴重点部分进行讲解。
 通过HASH获取API地址：
 
