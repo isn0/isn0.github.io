@@ -84,7 +84,9 @@ description: 绕过XSS过滤器
 
 &emsp;&emsp;在实际进行远程黑盒fuzzing之前我们先来构造一个本地fuzzing的例子来练习一下，看看模版的构造和元素的选择能否达到预想的效果。
 
-&emsp;&emsp;我选择了htmLawed作为fuzzing对象，这是一个php写的开源的HTML过滤器，有兴趣的话可以先到[http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed/htmLawedTest.php](http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed/htmLawedTest.php)这个网站，先手工测试一下看看能不能手工绕过它对CSS的过滤，也许大牛是可以手工XSS的，反正我试了一会没有成功，没办法，智商就只有这么多。这里我说的是上面那种例子里的样式表XSS，你可别直接输入一个\<script\>人家是不过滤的，因为这个filter还要加参数。
+&emsp;&emsp;我选择了htmLawed作为fuzzing对象，这是一个php写的开源的HTML过滤器，有兴趣的话可以先到
+[http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed/htmLawedTest.php](http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed/htmLawedTest.php)
+这个网站，先手工测试一下看看能不能手工绕过它对CSS的过滤，也许大牛是可以手工XSS的，反正我试了一会没有成功，没办法，智商就只有这么多。这里我说的是上面那种例子里的样式表XSS，你可别直接输入一个\<script\>人家是不过滤的，因为这个filter还要加参数。
 
 我下载了htmLawed之后，在本地做了一个测试程序：
 
@@ -143,12 +145,12 @@ description: 绕过XSS过滤器
 
 &emsp;&emsp;我看了一下通过的用例，发现其实很多方法可以绕过htmLawed的过滤，这里举一个简单的例子：
 
-> <div id= \""&#  style="w:exp/*\\'<div*/ression(alert(9));'=">722</div>
-> <div id="\">/" style="w:exp/*&#*/ression(alert(9));&#</div>">723</div>
+    <div id= \""&#  style="w:exp/*\\'<div*/ression(alert(9));'=">722</div>
+    <div id="\">/" style="w:exp/*&#*/ression(alert(9));&#</div>">723</div>
 这两条一起传给filter之后，过滤结果为：
 
-> div style="w:exp  '<div*/ression(alert(8));'=">722</div>
-> <div>/" style="w:exp/*&#*/ression(alert(9));&#</div>">723
+    div style="w:exp  '<div*/ression(alert(8));'=">722</div>
+    <div>/" style="w:exp/*&#*/ression(alert(9));&#</div>">723
 &emsp;&emsp;就会弹出alert了，证明已经绕过了过滤。经过分析发现，主要原因在于对<div标签的过滤有问题，当同时存在两个<div的时候，会保留第二个舍弃第一个，这样导致了原有的安全域边界改变了。再结合第二条div中的双引号封闭前面的内容，所以本来第二条的style应该是标签之外的内容的低安全级别域，没有过滤/**/和expression，和前面结合之后就进入了高安全级别域的范围里面，导致了XSS。是不是看得有点头晕？这就证明了fuzzing能够做到人脑所做不到的事情（我这里说的是普通人脑，大牛们的脑子除外）。
 
 ## 0x05 实战：远程fuzzing ##
