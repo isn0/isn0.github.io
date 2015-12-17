@@ -9,3 +9,6 @@ title: isno's blog
 url: http://isn0.github.io
 feed: /atom.xml
 author_info: <a href="http://isn0.github.io/">isno</a>
+
+gems:
+    - jekyll-feed
