@@ -5,7 +5,7 @@ category: blog
 description: 绕过XSS过滤器
 ---
 
-## 题记：这是09年自己写的总结文章，之后多年也不搞这个了，技术显然是过时了，但我觉得思路还是有用的，算抛砖引玉吧，各位见笑  ##
+**题记：这是09年自己写的总结文章，之后多年也不搞这个了，技术显然是过时了，但我觉得思路还是有用的，算抛砖引玉吧，各位见笑**
 
 ## 0x00 前言 ##
 
@@ -65,10 +65,10 @@ description: 绕过XSS过滤器
 
 有了模版，用什么样的元素进行填充，就是我们要考虑的第二个重要问题。首先边界元素肯定是要的，例如上边的例子里面的边界元素
 
-> =":;
+    =":;
 能想到的还有
 
-> 空格、<、>、</div>
+    空格、<、\>、</div\>
 等，有时候虽然看起来不可能确定错边界，但实际上filter的行为往往出人意料，这也正是fuzzing存在的意义。
 
 &emsp;&emsp;除了边界元素之外还有一种要考虑的是filter过滤的元素，例如filter过滤expression，我们就把expression也当做随机填充的元素，还有/和/、onXXX()等，当filter删除或改变这些内容后就有可能会导致边界的改变。
@@ -84,7 +84,7 @@ description: 绕过XSS过滤器
 
 &emsp;&emsp;在实际进行远程黑盒fuzzing之前我们先来构造一个本地fuzzing的例子来练习一下，看看模版的构造和元素的选择能否达到预想的效果。
 
-&emsp;&emsp;我选择了htmLawed作为fuzzing对象，这是一个php写的开源的HTML过滤器，有兴趣的话可以先到http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed/htmLawedTest.php这个网站，先手工测试一下看看能不能手工绕过它对CSS的过滤，也许大牛是可以手工XSS的，反正我试了一会没有成功，没办法，智商就只有这么多。这里我说的是上面那种例子里的样式表XSS，你可别直接输入一个<script>人家是不过滤的，因为这个filter还要加参数。
+&emsp;&emsp;我选择了htmLawed作为fuzzing对象，这是一个php写的开源的HTML过滤器，有兴趣的话可以先到[http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed/htmLawedTest.php](http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed/htmLawedTest.php)这个网站，先手工测试一下看看能不能手工绕过它对CSS的过滤，也许大牛是可以手工XSS的，反正我试了一会没有成功，没办法，智商就只有这么多。这里我说的是上面那种例子里的样式表XSS，你可别直接输入一个\<script\>人家是不过滤的，因为这个filter还要加参数。
 
 我下载了htmLawed之后，在本地做了一个测试程序：
 
