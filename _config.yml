@@ -7,7 +7,7 @@ permalink: /:title
 
 title: isno's blog
 url: http://isn0.github.io
-feed: /atom.xml
+feed: /feed.xml
 author_info: <a href="http://isn0.github.io/">isno</a>
 
 gems:
