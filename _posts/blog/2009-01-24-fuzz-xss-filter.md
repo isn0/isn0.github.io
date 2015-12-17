@@ -38,16 +38,16 @@ description: 绕过XSS过滤器
     <div style="width:expression(alert(9));">
 其中：
 
-> expression(alert(9))
+    expression(alert(9))
 &emsp;&emsp;是重点扫描区域也就是最高安全级别区域，对这个区域应该过滤/* */和expression等，filter怎么确定这个区域呢？首先在div标签内找到style属性，在=后面找到""之间的内容，根据:来划分样式名称和内容，以;分隔几个样式。那么在这里=":;这些都是关键字。如果XSSer提交以下内容：
 
     <div style="width:expre/*"*/ssion(alert(9));">
 最高安全区域还应该是
 
-> expre/*"*/ssion(alert(9))
+    expre/*"*/ssion(alert(9))
 但是如果filter在划分区域的时候首先根据第一个封闭的双引号对来划分，那么就会针对下面的内容做过滤：
 
-> width:expre/*
+    width:expre/*
 &emsp;&emsp;这样显然是不正确的，因为/* */中的内容是注释，是要丢弃的内容，如果先根据第一个双引号就确定了区域边界的话，那么在绿色区域也是过滤不到expression的，就会导致过滤被绕过。所以在这里正确的确定边界的方法是找到最后一个双引号来进行封闭，如果没找到的话还要自动添加，否则又会造成高级别安全区域的扩大，扩大了并非会更安全，安全区域的扩大会引起后面的边界混乱，同样会造成漏洞。当然了，这个情况只是我想象出来的用来举例的，实际情况不太可能这么简单，这里要说明的只是区域边界对于XSS fuzzing的重要性。
 
 &emsp;&emsp;因此我们设计fuzzer的时候就要在一个模版的有可能导致边界混乱的地方添入一些元素组合来作为testcase，所以第一要考虑的是确定模版，例如我们可以把
@@ -171,21 +171,22 @@ description: 绕过XSS过滤器
 
 国外：
 
-> @y*.com
-> @h*.com
-> @aol.com
-> @hanmail.com
-> @fastmail.fm
-> @hushmail.com
-> @epochtimes.com
+- @y*.com
+- @h*.com
+- @aol.com
+- @hanmail.com
+- @fastmail.fm
+- @hushmail.com
+- @epochtimes.com
+
 国内：
 
-> @1*.com
-> @si*.com
-> @so*.com
-> @t*.com
-> @21*.com
-> @q*.com
+- @1*.com
+- @si*.com
+- @so*.com
+- @t*.com
+- @21*.com
+- @q*.com
 （别当真，都是过去时了）
 
 &emsp;&emsp;其实国内的大多数不是fuzzing出来的，而是手工测试出来的，因为国内邮箱的filter还比较初级，过滤得很不完善，一些最简单的小技巧就能骗过filter了。当然后来用fuzzer测试的时候又发现了更多漏洞。
